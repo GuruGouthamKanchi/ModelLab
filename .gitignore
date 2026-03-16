@@ -1,0 +1,31 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.local
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.env
+.pytest_cache/
+
+# Dataset Uploads (Optional, but usually ignored in git)
+server/uploads/*.csv
+server/uploads/*.xlsx
+server/uploads/*.xls
+server/uploads/*.json
+
+# Models
+ml-service/models/*.joblib
+ml-service/models/*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
