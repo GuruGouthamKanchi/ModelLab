@@ -8,10 +8,13 @@ import {
   ArrowUpRight, 
   Clock, 
   Plus, 
-  Search,
-  MoreVertical,
   Zap,
-  Sparkles
+  Sparkles,
+  Layers,
+  Search,
+  BookOpen,
+  MousePointer2,
+  Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -78,12 +81,41 @@ const Dashboard = () => {
                 className="bg-surface/80 backdrop-blur-md border border-white/5 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 w-full md:w-72 transition-all shadow-lg"
               />
             </div>
-            <Link to="/datasets" className="btn-primary flex items-center space-x-2 px-5 py-3 shadow-lg group">
+            <Link to="/models/build" className="btn-primary flex items-center space-x-2 px-5 py-3 shadow-lg group">
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
               <span className="uppercase tracking-widest text-xs font-bold">New Operation</span>
             </Link>
           </div>
         </header>
+
+        {/* Quick Operations Matrix */}
+        <div className="mb-12">
+            <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-6 flex items-center">
+                <Layers className="mr-3 text-primary w-4 h-4" />
+                Neural Module Shortcuts
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {[
+                    { name: 'Ingest', path: '/datasets', icon: Database, color: 'text-primary' },
+                    { name: 'Cleanse', path: '/datasets', icon: Sparkles, color: 'text-success' },
+                    { name: 'Architect', path: '/models/build', icon: Cpu, color: 'text-secondary' },
+                    { name: 'Train', path: '/experiments', icon: Activity, color: 'text-accent' },
+                    { name: 'Predict', path: '/predictions', icon: Zap, color: 'text-warning' },
+                    { name: 'Audit', path: '/experiments', icon: Clock, color: 'text-text-muted' },
+                ].map((op) => (
+                    <Link 
+                      key={op.name} 
+                      to={op.path}
+                      className="glass-card p-4 flex flex-col items-center justify-center text-center space-y-3 hover:border-white/20 transition-all group"
+                    >
+                        <div className={`p-3 rounded-lg bg-white/5 ${op.color} group-hover:scale-110 transition-transform`}>
+                            <op.icon size={20} />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary group-hover:text-white">{op.name}</span>
+                    </Link>
+                ))}
+            </div>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
