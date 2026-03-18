@@ -20,6 +20,7 @@ import {
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../components/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -29,6 +30,8 @@ const ModelsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'compare'
   const [deleting, setDeleting] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [modelToDelete, setModelToDelete] = useState(null);
   const navigate = useNavigate();
 
   const fetchModels = async () => {
@@ -48,7 +51,13 @@ const ModelsPage = () => {
   useEffect(() => { fetchModels(); }, []);
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete model "${name}"? This action cannot be undone.`)) return;
+    setModelToDelete({ id, name });
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!modelToDelete) return;
+    const { id } = modelToDelete;
     setDeleting(id);
     try {
       const token = localStorage.getItem('token');
@@ -368,6 +377,15 @@ const ModelsPage = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Destroy Model Artifact?"
+        message={`Are you sure you want to delete "${modelToDelete?.name}"? All associated neural weights and metadata will be permanently purged.`}
+        confirmText="Confirm Deletion"
+      />
     </Layout>
   );
 };

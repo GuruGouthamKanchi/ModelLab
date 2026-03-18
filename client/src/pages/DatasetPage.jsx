@@ -22,6 +22,7 @@ import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../components/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -31,6 +32,8 @@ const DatasetPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [datasetToDelete, setDatasetToDelete] = useState(null);
 
   // Enhancement states
   const [pendingFile, setPendingFile] = useState(null);
@@ -150,9 +153,15 @@ const DatasetPage = () => {
     setError('');
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to remove this dataset? This will affect any models trained with it.')) return;
+  const handleDelete = (id, name) => {
+    setDatasetToDelete({ id, name });
+    setShowConfirm(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!datasetToDelete) return;
+    const { id } = datasetToDelete;
+    
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${API_URL}/dataset/${id}`, {
@@ -495,7 +504,7 @@ const DatasetPage = () => {
                           <span>SPECTRUM</span>
                         </Link>
                         <button
-                          onClick={() => handleDelete(dataset._id)}
+                          onClick={() => handleDelete(dataset._id, dataset.name)}
                           className="p-3 text-text-muted hover:text-error transition-all hover:bg-error/10 rounded-xl hover:border hover:border-error/20"
                           title="Purge Artifact"
                         >
@@ -515,6 +524,15 @@ const DatasetPage = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Purge Neural Telemetry?"
+        message={`Are you sure you want to remove "${datasetToDelete?.name}"? This will permanently erase the specimen and may destabilize models trained on this structure.`}
+        confirmText="Confirm Purge"
+      />
     </Layout>
   );
 };
