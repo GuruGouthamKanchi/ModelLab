@@ -44,7 +44,7 @@ const AuthPage = ({ type }) => {
         {/* Branding */}
         <div className="text-center mb-10 text-white">
           <div className="inline-flex items-center space-x-3 mb-8 group cursor-pointer" onClick={() => navigate('/')}>
-             <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_35px_rgba(59,130,246,0.5)] transition-all duration-300 relative overflow-hidden">
+             <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] group-hover:shadow-[0_0_35px_rgba(255,46,147,0.5)] transition-all duration-300 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 <Sparkles className="text-white w-6 h-6 relative z-10" />
              </div>
@@ -73,7 +73,7 @@ const AuthPage = ({ type }) => {
               exit={{ height: 0, opacity: 0, marginBottom: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-success/10 border border-success/30 text-success p-4 rounded-xl flex items-center space-x-3 shadow-[0_0_20px_rgba(16,185,129,0.15)] backdrop-blur-md">
+              <div className="bg-accent/10 border border-accent/30 text-accent p-4 rounded-xl flex items-center space-x-3 shadow-[0_0_20px_rgba(57,255,20,0.15)] backdrop-blur-md">
                 <CheckCircle2 size={20} className="flex-shrink-0" />
                 <span className="text-sm font-bold tracking-wide">{successMessage}</span>
               </div>
@@ -82,7 +82,7 @@ const AuthPage = ({ type }) => {
         </AnimatePresence>
 
         {/* Auth Card */}
-        <div className="glass-card bg-surface/80 backdrop-blur-2xl border-white/5 shadow-2xl relative overflow-hidden group">
+        <div className="glass-card bg-surface/80 backdrop-blur-2xl border-primary/10 shadow-2xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
           
           {/* Neon Top Border */}
@@ -113,7 +113,7 @@ const AuthPage = ({ type }) => {
             
             {/* Animated Tab Background */}
             <div 
-              className="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-primary rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_15px_rgba(59,130,246,0.5)] z-0"
+               className="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-gradient-to-r from-primary to-secondary rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_15px_rgba(168,85,247,0.5)] z-0"
               style={{ transform: activeTab === 'login' ? 'translateX(0)' : 'translateX(100%)', left: '6px' }}
             >
                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-lg"></div>

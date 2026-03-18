@@ -9,9 +9,15 @@ const modelSchema = new mongoose.Schema({
   features: [String],
   parameters: mongoose.Schema.Types.Mixed,
   metrics: mongoose.Schema.Types.Mixed,
-  modelPath: { type: String },
+  taskType: { type: String, enum: ['classification', 'regression'], default: 'classification' },
+  featureImportances: mongoose.Schema.Types.Mixed,
+  actualVsPredicted: mongoose.Schema.Types.Mixed,
+  classLabels: [mongoose.Schema.Types.Mixed],
+  fileId: { type: mongoose.Schema.Types.ObjectId }, // GridFS file ID
+  modelPath: { type: String }, // Legacy path support
   status: { type: String, enum: ['training', 'completed', 'failed'], default: 'training' },
   error: { type: String },
+  trainingDuration: { type: Number }, // in seconds
   createdAt: { type: Date, default: Date.now }
 });
 

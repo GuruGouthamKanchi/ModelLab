@@ -35,10 +35,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-72 h-screen glass-panel border-r border-white/5 flex flex-col fixed left-0 top-0 z-50">
+    <div className="w-72 h-screen glass-panel border-r border-primary/10 flex flex-col fixed left-0 top-0 z-50">
       <div className="p-8">
         <div className="flex items-center space-x-3 group cursor-pointer">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all duration-300 relative overflow-hidden">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] group-hover:shadow-[0_0_30px_rgba(255,46,147,0.5)] transition-all duration-300 relative overflow-hidden">
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             <Sparkles className="text-white w-5 h-5 relative z-10" />
           </div>
@@ -50,7 +50,7 @@ const Sidebar = () => {
       </div>
 
       <div className="px-6 mb-4">
-         <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+         <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
       </div>
 
       <nav className="flex-1 px-4 space-y-2 overflow-y-auto scrollbar-hide py-2">
@@ -64,13 +64,13 @@ const Sidebar = () => {
                 relative flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group overflow-hidden
                 ${isActive 
                   ? 'bg-primary/10 text-white' 
-                  : 'text-text-secondary hover:bg-white/5 hover:text-white'}
+                  : 'text-text-secondary hover:bg-primary/5 hover:text-white'}
               `}
             >
               {isActive && (
                 <motion.div 
                   layoutId="sidebar-active"
-                  className="absolute inset-0 border border-primary/30 rounded-xl bg-primary/5 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]"
+                  className="absolute inset-0 border border-primary/30 rounded-xl bg-primary/5 shadow-[inset_0_0_20px_rgba(168,85,247,0.08)]"
                   initial={false}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
@@ -95,10 +95,10 @@ const Sidebar = () => {
       </nav>
 
       <div className="p-6 mt-auto">
-        <div className="p-4 rounded-xl bg-gradient-to-br from-gray-900/80 to-gray-950 border border-white/5 relative overflow-hidden group mb-4">
-           <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors"></div>
+        <div className="p-4 rounded-xl bg-gradient-to-br from-surface-light/80 to-surface border border-primary/10 relative overflow-hidden group mb-4">
+           <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/15 blur-xl rounded-full group-hover:bg-secondary/20 transition-colors"></div>
            <div className="flex items-center space-x-3 relative z-10">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-white font-bold font-display shadow-lg ring-2 ring-white/10">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-white font-bold font-display shadow-lg ring-2 ring-primary/20">
                 {user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
               <div className="overflow-hidden flex-1">

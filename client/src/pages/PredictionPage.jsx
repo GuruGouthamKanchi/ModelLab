@@ -16,6 +16,8 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const PredictionPage = () => {
   const [searchParams] = useSearchParams();
   const modelIdFromUrl = searchParams.get('modelId');
@@ -32,7 +34,7 @@ const PredictionPage = () => {
     const fetchModels = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/model/list', {
+        const res = await axios.get(`${API_URL}/model/list`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const completedModels = res.data.filter(m => m.status === 'completed');
@@ -74,7 +76,7 @@ const PredictionPage = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/model/predict', {
+      const res = await axios.post(`${API_URL}/model/predict`, {
         modelId: selectedModel._id,
         inputs
       }, {
@@ -99,8 +101,8 @@ const PredictionPage = () => {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
 
         <header className="mb-14 relative z-10 p-8 glass-card border-secondary/20 bg-gradient-to-r from-secondary/5 to-transparent">
-          <div className="inline-flex items-center space-x-2 text-secondary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-4 bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(139,92,246,0.8)] animate-pulse"></span>
+          <div className="inline-flex items-center space-x-2 text-secondary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-4 bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20 shadow-[0_0_15px_rgba(255,46,147,0.15)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(255,46,147,0.8)] animate-pulse"></span>
             <span>Inference Node Online</span>
           </div>
           <h1 className="text-4xl font-black text-white mb-3 tracking-tighter uppercase font-display">Live Inference</h1>
@@ -176,10 +178,10 @@ const PredictionPage = () => {
                    <button
                      disabled={predicting}
                      onClick={handlePredict}
-                     className="w-full py-5 rounded-xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center space-x-3 group relative overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                     className="w-full py-5 rounded-xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center space-x-3 group relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                      style={{
-                       background: predicting ? 'transparent' : 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
-                       border: predicting ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)'
+                       background: predicting ? 'transparent' : 'linear-gradient(135deg, #A855F7 0%, #39FF14 100%)',
+                       border: predicting ? '1px solid rgba(168,85,247,0.3)' : '1px solid rgba(255,255,255,0.1)'
                      }}
                    >
                      {!predicting && <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>}
@@ -246,7 +248,7 @@ const PredictionPage = () => {
                          >
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-success/10 rounded-full blur-[80px] pointer-events-none"></div>
                             
-                            <div className="w-24 h-24 bg-success/10 text-success rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-success/30 shadow-[0_0_40px_rgba(16,185,129,0.2)] relative z-10">
+                            <div className="w-24 h-24 bg-success/10 text-success rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-success/30 shadow-[0_0_40px_rgba(57,255,20,0.2)] relative z-10">
                                <CheckCircle size={48} />
                             </div>
                             
@@ -264,7 +266,7 @@ const PredictionPage = () => {
                                </div>
                                <div className="w-full h-2 bg-surface rounded-full overflow-hidden border border-white/5">
                                   <div 
-                                    className="h-full bg-gradient-to-r from-success/50 to-success shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
+                                    className="h-full bg-gradient-to-r from-success/50 to-success shadow-[0_0_10px_rgba(57,255,20,0.5)]" 
                                     style={{ width: `${prediction.confidence * 100}%` }}
                                   ></div>
                                </div>

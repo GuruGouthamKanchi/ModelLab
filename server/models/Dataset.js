@@ -5,11 +5,12 @@ const datasetSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
   originalName: { type: String },
-  filePath: { type: String, required: true },
+  fileId: { type: mongoose.Schema.Types.ObjectId }, // GridFS file ID
+  filePath: { type: String }, // Keep for legacy or temporary storage
   fileType: { type: String },
   columns: [{ 
     name: String, 
-    type: String, 
+    type: { type: String },
     sampleValues: [mongoose.Schema.Types.Mixed],
     missingCount: { type: Number, default: 0 },
     uniqueCount: { type: Number, default: 0 }

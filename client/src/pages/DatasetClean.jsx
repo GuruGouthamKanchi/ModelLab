@@ -15,6 +15,8 @@ import {
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const DatasetClean = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ const DatasetClean = () => {
     const fetchDataset = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/dataset/${id}`, {
+        const res = await axios.get(`${API_URL}/dataset/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setDataset(res.data.dataset);
@@ -63,7 +65,7 @@ const DatasetClean = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`http://localhost:5000/api/dataset/${id}/clean`, {
+      const res = await axios.post(`${API_URL}/dataset/${id}/clean`, {
         drop_missing: dropMissing,
         fill_missing: fillMissing || null,
         drop_columns: dropColumns,
@@ -89,13 +91,13 @@ const DatasetClean = () => {
       <div className="max-w-6xl mx-auto pb-20">
         <header className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
           <div className="flex items-start space-x-6">
-            <Link to={`/datasets/${id}`} className="mt-1.5 p-2.5 bg-surface/50 border border-white/5 rounded-xl text-text-muted hover:text-white hover:border-primary/50 transition-all shadow-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+            <Link to={`/datasets/${id}`} className="mt-1.5 p-2.5 bg-surface/50 border border-white/5 rounded-xl text-text-muted hover:text-white hover:border-primary/50 transition-all shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]">
               <ArrowLeft size={20} />
             </Link>
             <div>
               <div className="flex items-center space-x-4 mb-3">
                  <h1 className="text-4xl font-black text-white tracking-tighter uppercase font-display">Data Preparation</h1>
-                 <span className="px-2.5 py-1 bg-secondary/20 text-secondary border border-secondary/30 rounded shadow-[0_0_10px_rgba(139,92,246,0.2)] text-[10px] font-mono font-black tracking-widest uppercase">
+                 <span className="px-2.5 py-1 bg-secondary/20 text-secondary border border-secondary/30 rounded shadow-[0_0_10px_rgba(255,46,147,0.2)] text-[10px] font-mono font-black tracking-widest uppercase">
                     PIPELINE
                  </span>
               </div>
@@ -123,7 +125,7 @@ const DatasetClean = () => {
             className="glass-card p-16 text-center border-success/30 relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-success/5 pointer-events-none"></div>
-            <div className="w-24 h-24 bg-success/20 text-success rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(16,185,129,0.2)] relative z-10">
+            <div className="w-24 h-24 bg-success/20 text-success rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(57,255,20,0.2)] relative z-10">
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-4 relative z-10">Neural Artifact Stabilized</h2>
@@ -131,7 +133,7 @@ const DatasetClean = () => {
               The cleaning pipeline executed successfully. A new pristine variant of the dataset has been registered in the laboratory.
             </p>
             <div className="flex justify-center space-x-6 relative z-10">
-              <Link to={`/datasets/${cleanedDatasetId}`} className="btn-primary shadow-lg shadow-primary/20 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+              <Link to={`/datasets/${cleanedDatasetId}`} className="btn-primary shadow-lg shadow-primary/20 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                 Inspect Cleaned Data
               </Link>
               <Link to="/datasets" className="px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-all font-bold tracking-widest uppercase text-xs">
@@ -190,7 +192,7 @@ const DatasetClean = () => {
                              disabled={dropMissing}
                              className={`p-4 rounded-xl border transition-all text-left ${
                                fillMissing === method 
-                                 ? 'bg-primary/10 border-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
+                                 ? 'bg-primary/10 border-primary text-white shadow-[0_0_15px_rgba(168,85,247,0.15)]' 
                                  : 'bg-surface/50 border-white/5 text-text-secondary hover:border-white/20'
                              }`}
                            >
@@ -276,7 +278,7 @@ const DatasetClean = () => {
                    ) : (
                      <button 
                        onClick={handleClean}
-                       className="btn-primary w-full py-4 flex items-center justify-center space-x-3 shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-shadow group"
+                       className="btn-primary w-full py-4 flex items-center justify-center space-x-3 shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-shadow group"
                      >
                         <Play size={16} fill="currentColor" className="group-hover:scale-110 transition-transform" />
                         <span className="font-bold tracking-widest uppercase">Execute Pipeline</span>

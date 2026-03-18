@@ -14,11 +14,11 @@ const LandingPage = () => {
       </div>
 
       {/* Navbar */}
-      <nav className="border-b border-white/5 bg-background/50 backdrop-blur-xl sticky top-0 z-50">
+      <nav className="border-b border-primary/10 bg-background/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-3 group cursor-pointer">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all duration-300 relative overflow-hidden">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] group-hover:shadow-[0_0_30px_rgba(255,46,147,0.5)] transition-all duration-300 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 <Sparkles className="text-white w-5 h-5 relative z-10" />
               </div>
@@ -29,10 +29,10 @@ const LandingPage = () => {
             </div>
             
             <div className="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide text-text-secondary">
-              <a href="#features" className="hover:text-white transition-colors">Architecture</a>
-              <a href="#demo" className="hover:text-white transition-colors">Telemetry</a>
-              <a href="#docs" className="hover:text-white transition-colors">Docs</a>
-              <div className="h-4 w-px bg-gray-800"></div>
+              <a href="#features" className="hover:text-primary transition-colors">Architecture</a>
+              <a href="#demo" className="hover:text-primary transition-colors">Telemetry</a>
+              <a href="#docs" className="hover:text-primary transition-colors">Docs</a>
+              <div className="h-4 w-px bg-primary/20"></div>
               <Link to="/login" className="hover:text-white transition-colors font-mono uppercase tracking-widest text-xs">Initialize_Session</Link>
               <Link to="/register" className="btn-primary group">
                  <span className="relative z-10">Access Platform</span>
@@ -54,15 +54,15 @@ const LandingPage = () => {
                initial={{ opacity: 0, scale: 0.9 }}
                animate={{ opacity: 1, scale: 1 }}
                transition={{ delay: 0.2 }}
-               className="inline-flex items-center space-x-2 px-4 py-2 mb-8 text-xs font-bold font-mono tracking-widest text-primary uppercase bg-primary/10 border border-primary/20 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+               className="inline-flex items-center space-x-2 px-4 py-2 mb-8 text-xs font-bold font-mono tracking-widest text-primary uppercase bg-primary/10 border border-primary/20 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.15)]"
             >
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
               <span>ModelLab Engine v2.0 Online</span>
             </motion.div>
             
             <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 text-white leading-[1.1]">
               Zero-Friction <br />
-              <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent neon-text-glow">Neural Training.</span>
+              <span className="bg-gradient-to-r from-primary via-secondary to-warning bg-clip-text text-transparent animate-gradient">Neural Training.</span>
             </h1>
             
             <p className="max-w-3xl mx-auto text-xl text-text-secondary mb-14 font-medium leading-relaxed">
@@ -75,8 +75,8 @@ const LandingPage = () => {
                 <span>Engage Laboratory</span>
                 <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </Link>
-              <button className="px-10 py-5 text-lg font-bold border border-white/10 rounded-lg hover:bg-white/5 hover:border-white/20 transition-all flex items-center bg-gray-900/40 backdrop-blur-sm w-full sm:w-auto justify-center">
-                <Activity className="mr-3 w-5 h-5 text-secondary" />
+              <button className="px-10 py-5 text-lg font-bold border border-primary/15 rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all flex items-center bg-surface/40 backdrop-blur-sm w-full sm:w-auto justify-center group">
+                <Activity className="mr-3 w-5 h-5 text-secondary group-hover:text-primary transition-colors" />
                 View Neural Metrics
               </button>
             </div>
@@ -85,7 +85,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 relative z-10 border-t border-white/5 bg-gray-950/50">
+      <section id="features" className="py-32 relative z-10 border-t border-primary/10 bg-surface/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Core Infrastructure</h2>
@@ -93,10 +93,10 @@ const LandingPage = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: Database, title: "Data Ingestion", desc: "Drag and drop massive CSV/XLSX artifacts. High-speed parsing with automated schema null-indexing." },
-              { icon: BarChart3, title: "Spectral Analysis", desc: "Real-time distribution mapping to detect data drift and outlier anomalies across deep feature sets." },
-              { icon: Cpu, title: "AutoML Engine", desc: "Select from Random Forest, Logistic Regression, KNN, and more. Instant hyperparameter scaffolding." },
-              { icon: Zap, title: "Live Inference", desc: "Execute immediate predictions against deployed neural state. View detailed confidence probabilities." },
+              { icon: Database, title: "Data Ingestion", desc: "Drag and drop massive CSV/XLSX artifacts. High-speed parsing with automated schema null-indexing.", color: 'text-primary' },
+              { icon: BarChart3, title: "Spectral Analysis", desc: "Real-time distribution mapping to detect data drift and outlier anomalies across deep feature sets.", color: 'text-secondary' },
+              { icon: Cpu, title: "AutoML Engine", desc: "Select from Random Forest, Logistic Regression, KNN, and more. Instant hyperparameter scaffolding.", color: 'text-accent' },
+              { icon: Zap, title: "Live Inference", desc: "Execute immediate predictions against deployed neural state. View detailed confidence probabilities.", color: 'text-warning' },
             ].map((f, i) => (
               <motion.div
                 key={i}
@@ -106,9 +106,9 @@ const LandingPage = () => {
                 transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="glass-card p-10 group"
               >
-                <div className="w-14 h-14 bg-gray-900 border border-gray-800 group-hover:border-primary/50 group-hover:bg-primary/10 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 relative overflow-hidden">
+                <div className={`w-14 h-14 bg-surface border border-primary/10 group-hover:border-primary/40 group-hover:bg-primary/10 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 relative overflow-hidden`}>
                   <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <f.icon className="text-primary w-7 h-7 relative z-10" />
+                  <f.icon className={`${f.color} w-7 h-7 relative z-10`} />
                 </div>
                 <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{f.title}</h3>
                 <p className="text-text-secondary leading-relaxed font-medium">{f.desc}</p>
@@ -119,7 +119,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 border-t border-white/5 relative z-10 bg-background">
+      <footer className="py-16 border-t border-primary/10 relative z-10 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-text-secondary">
           <div className="flex items-center space-x-3 mb-6 md:mb-0">
             <Sparkles className="text-primary w-6 h-6" />
@@ -127,11 +127,11 @@ const LandingPage = () => {
           </div>
           <div className="flex items-center space-x-4 mb-6 md:mb-0 font-mono text-xs uppercase tracking-widest text-text-muted">
              <span>System Build: 2.0.404.1</span>
-             <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
+             <span className="w-1 h-1 bg-primary/30 rounded-full"></span>
              <span>Status: Optimal</span>
           </div>
           <div className="flex space-x-6">
-            <a href="#" className="p-2 border border-gray-800 rounded-lg hover:border-primary hover:text-primary transition-colors bg-gray-900"><Github size={20} /></a>
+            <a href="#" className="p-2 border border-primary/15 rounded-lg hover:border-primary hover:text-primary transition-colors bg-surface"><Github size={20} /></a>
           </div>
         </div>
       </footer>

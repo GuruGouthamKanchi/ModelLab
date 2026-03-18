@@ -1,166 +1,52 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
+import io
+import joblib
+import os
+import uuid
+from typing import List, Optional
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error, r2_score, confusion_matrix
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-import joblib
-import os
-import uuid
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    mean_squared_error, mean_absolute_error, r2_score, confusion_matrix
+)
+from sklearn.preprocessing import LabelEncoder
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
-def load_dataset(dataset_path: str):
-    if not os.path.exists(dataset_path):
-        raise HTTPException(status_code=404, detail=f"Dataset file not found: {dataset_path}")
-    
-    if dataset_path.endswith('.csv'):
-        try:
-            return pd.read_csv(dataset_path)
-        except UnicodeDecodeError:
-            try:
-                return pd.read_csv(dataset_path, encoding='latin1')
-            except:
-                return pd.read_csv(dataset_path, encoding='ISO-8859-1')
-    elif dataset_path.endswith('.json'):
-        return pd.read_json(dataset_path)
-    elif dataset_path.endswith(('.xlsx', '.xls')):
-        return pd.read_excel(dataset_path)
-    else:
-        # Fallback to CSV if extension is unknown but might be text
-        try:
-            return pd.read_csv(dataset_path)
-        except:
-            raise HTTPException(status_code=400, detail="Unsupported file format")
-
+def load_df(file_content: bytes, filename: str):
+    try:
+        if filename.endswith('.csv'):
+            return pd.read_csv(io.BytesIO(file_content))
+        elif filename.endswith('.json'):
+            return pd.read_json(io.BytesIO(file_content))
+        elif filename.endswith(('.xlsx', '.xls')):
+            return pd.read_excel(io.BytesIO(file_content))
+        else:
+            return pd.read_csv(io.BytesIO(file_content))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse file: {str(e)}")
 
 @app.get("/")
 async def root():
-    return {"status": "online", "service": "ModelLab ML Engine", "version": "1.0.0"}
-
-class TrainRequest(BaseModel):
-    dataset_path: str
-    algorithm: str
-    target_column: str
-    features: list
-    parameters: dict = {}
-
-class PredictRequest(BaseModel):
-    model_path: str
-    inputs: dict
-
-class AnalyzeRequest(BaseModel):
-    dataset_path: str
-
-class CleanRequest(BaseModel):
-    dataset_path: str
-    drop_missing: bool = False
-    fill_missing: str = None # 'mean', 'median', 'mode'
-    drop_columns: list = []
-    encode_categorical: bool = False
-
-@app.post("/train")
-async def train(request: TrainRequest):
-    try:
-        # Load dataset
-        df = load_dataset(request.dataset_path)
-        
-        X = df[request.features]
-        y = df[request.target_column]
-        
-        # Simple preprocessing
-        # Handle missing values
-        X = X.fillna(X.median(numeric_only=True))
-        X = X.fillna('missing')
-        
-        # Encode categorical features
-        label_encoders = {}
-        for col in X.select_dtypes(include=['object']).columns:
-            le = LabelEncoder()
-            X[col] = le.fit_transform(X[col].astype(str))
-            label_encoders[col] = le
-            
-        if y.dtype == 'object':
-            le_y = LabelEncoder()
-            y = le_y.fit_transform(y.astype(str))
-            label_encoders[f'target_{request.target_column}'] = le_y
-            is_classification = True
-        else:
-            is_classification = request.algorithm in ['Logistic Regression', 'Decision Tree', 'Random Forest', 'K-Nearest Neighbors'] and y.nunique() < 20
-        
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        
-        # Algorithm selection
-        model = None
-        if request.algorithm == 'Linear Regression':
-            model = LinearRegression()
-        elif request.algorithm == 'Logistic Regression':
-            model = LogisticRegression()
-        elif request.algorithm == 'Decision Tree':
-            model = DecisionTreeClassifier() if is_classification else DecisionTreeRegressor()
-        elif request.algorithm == 'Random Forest':
-            model = RandomForestClassifier() if is_classification else RandomForestRegressor()
-        elif request.algorithm == 'K-Nearest Neighbors':
-            model = KNeighborsClassifier() if is_classification else KNeighborsRegressor()
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported algorithm")
-            
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        
-        metrics = {}
-        if is_classification:
-            metrics['accuracy'] = accuracy_score(y_test, y_pred)
-            metrics['precision'] = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-            metrics['recall'] = recall_score(y_test, y_pred, average='weighted', zero_division=0)
-            metrics['f1'] = f1_score(y_test, y_pred, average='weighted', zero_division=0)
-            cm = confusion_matrix(y_test, y_pred)
-            metrics['confusion_matrix'] = cm.tolist()
-        else:
-            metrics['mse'] = mean_squared_error(y_test, y_pred)
-            metrics['r2'] = r2_score(y_test, y_pred)
-            
-        # Save model
-        model_id = str(uuid.uuid4())
-        model_dir = "saved_models"
-        if not os.path.exists(model_dir):
-            os.makedirs(model_dir)
-            
-        model_path = os.path.join(model_dir, f"{model_id}.joblib")
-        joblib.dump({
-            'model': model,
-            'features': request.features,
-            'target_column': request.target_column,
-            'label_encoders': label_encoders,
-            'is_classification': is_classification,
-            'feature_types': X.dtypes.to_dict()
-        }, model_path)
-        
-        return {
-            "metrics": metrics,
-            "model_path": model_path
-        }
-    except Exception as e:
-        print(f"Training error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    return {"status": "online", "service": "ModelLab ML Engine", "version": "3.0.0"}
 
 @app.post("/analyze")
-async def analyze_dataset(request: AnalyzeRequest):
+async def analyze(file: UploadFile = File(...)):
     try:
-        df = load_dataset(request.dataset_path)
+        content = await file.read()
+        df = load_df(content, file.filename)
         
-        # 1. Missing Values Overview - Ensure native types
         missing_values = {col: int(val) for col, val in df.isnull().sum().to_dict().items()}
-        
-        # 2. Data Types
         dtypes = {col: str(dtype) for col, dtype in df.dtypes.items()}
         
-        # 3. Numeric Summaries & Histograms
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         numeric_stats = {}
         histograms = {}
@@ -170,7 +56,6 @@ async def analyze_dataset(request: AnalyzeRequest):
                 "min": float(df[col].min()) if not pd.isna(df[col].min()) else 0.0,
                 "max": float(df[col].max()) if not pd.isna(df[col].max()) else 0.0
             }
-            # Calculate histogram bins (e.g., 20 bins)
             data_clean = df[col].dropna()
             if not data_clean.empty:
                 counts, bins = np.histogram(data_clean, bins=20)
@@ -178,16 +63,12 @@ async def analyze_dataset(request: AnalyzeRequest):
                     "counts": counts.tolist(),
                     "bins": bins.tolist()
                 }
-            else:
-                histograms[col] = {"counts": [], "bins": []}
             
-        # 4. Correlation Matrix - Ensure native floats
         correlation = {}
         if len(numeric_cols) > 1:
             corr_df = df[numeric_cols].corr().fillna(0)
             correlation = {k: {ik: float(iv) for ik, iv in v.items()} for k, v in corr_df.to_dict().items()}
             
-        # 5. Categorical Summaries
         cat_cols = df.select_dtypes(include=['object', 'category']).columns
         cat_stats = {}
         for col in cat_cols:
@@ -207,130 +88,207 @@ async def analyze_dataset(request: AnalyzeRequest):
             "correlation": correlation,
             "categorical_stats": cat_stats
         }
-        
     except Exception as e:
-        print(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/clean")
-async def clean_dataset(request: CleanRequest):
+async def clean(
+    file: UploadFile = File(...),
+    drop_missing: bool = Form(False),
+    fill_missing: Optional[str] = Form(None),
+    drop_columns: Optional[str] = Form(None), # comma separated string
+    encode_categorical: bool = Form(False)
+):
     try:
-        df = load_dataset(request.dataset_path)
+        content = await file.read()
+        df = load_df(content, file.filename)
         
-        # 1. Drop columns
-        if request.drop_columns:
-            df = df.drop(columns=[col for col in request.drop_columns if col in df.columns])
+        cols_to_drop = [c.strip() for c in drop_columns.split(',')] if drop_columns else []
+        if cols_to_drop:
+            df = df.drop(columns=[col for col in cols_to_drop if col in df.columns])
             
-        # 2. Handle missing values
-        if request.drop_missing:
+        if drop_missing:
             df = df.dropna()
-        elif request.fill_missing:
+        elif fill_missing:
             numeric_cols = df.select_dtypes(include=[np.number]).columns
-            cat_cols = df.select_dtypes(include=['object', 'category']).columns
+            for col in numeric_cols:
+                if fill_missing == 'mean':
+                    df[col] = df[col].fillna(df[col].mean())
+                elif fill_missing == 'median':
+                    df[col] = df[col].fillna(df[col].median())
             
-            if request.fill_missing == 'mean':
-                df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
-            elif request.fill_missing == 'median':
-                df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].median())
-                
-            # Mode for categorical or if mode is chosen for numerical
-            if request.fill_missing == 'mode' or len(cat_cols) > 0:
-                for col in df.columns:
-                    mode_val = df[col].mode()
-                    if not mode_val.empty:
-                        df[col] = df[col].fillna(mode_val[0])
-                        
-        # Final fallback for any remaining NaNs (e.g., column was entirely NaN)
-        df = df.fillna(0)
-
-        # 3. Categorical encoding
-        if request.encode_categorical:
-            cat_cols = df.select_dtypes(include=['object', 'category']).columns
-            for col in cat_cols:
+            # Fill categoricals with mode
+            for col in df.select_dtypes(include=['object', 'category']).columns:
+                mode_val = df[col].mode()
+                if not mode_val.empty:
+                    df[col] = df[col].fillna(mode_val[0])
+        
+        if encode_categorical:
+            for col in df.select_dtypes(include=['object', 'category']).columns:
                 le = LabelEncoder()
                 df[col] = le.fit_transform(df[col].astype(str))
-
-        # 4. Save cleaned dataset
-        dir_name = os.path.dirname(request.dataset_path)
-        base_name = os.path.basename(request.dataset_path)
-        name, ext = os.path.splitext(base_name)
-        new_filename = f"{name}_cleaned_{uuid.uuid4().hex[:6]}.csv"
-        new_path = os.path.join(dir_name, new_filename)
         
-        df.to_csv(new_path, index=False)
+        # Return cleaned as CSV stream
+        stream = io.StringIO()
+        df.to_csv(stream, index=False)
+        return StreamingResponse(
+            iter([stream.getvalue()]), 
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=cleaned_{file.filename}.csv"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/train")
+async def train(
+    file: UploadFile = File(...),
+    algorithm: str = Form(...),
+    target_column: str = Form(...),
+    features: str = Form(...), # comma separated
+    parameters: Optional[str] = Form("{}")
+):
+    try:
+        content = await file.read()
+        df = load_df(content, file.filename)
+        
+        feature_list = [f.strip() for f in features.split(',')]
+        X = df[feature_list].copy()
+        y = df[target_column].copy()
+        
+        # Auto-impute
+        for col in X.select_dtypes(include=[np.number]).columns:
+            X[col] = X[col].fillna(X[col].median())
+        for col in X.select_dtypes(include=['object', 'category']).columns:
+            X[col] = X[col].fillna('missing')
+            
+        # Encode features
+        label_encoders = {}
+        for col in X.select_dtypes(include=['object', 'category']).columns:
+            le = LabelEncoder()
+            X[col] = le.fit_transform(X[col].astype(str))
+            label_encoders[col] = le
+            
+        # Determine task type
+        is_classification = y.dtype == 'object' or y.dtype.name == 'category' or (request.algorithm in ['Logistic Regression', 'Decision Tree', 'Random Forest', 'K-Nearest Neighbors'] and y.nunique() < 20)
+        
+        if is_classification:
+            le_y = LabelEncoder()
+            y = le_y.fit_transform(y.astype(str))
+            label_encoders[f'target_{target_column}'] = le_y
+            task_type = 'classification'
+        else:
+            task_type = 'regression'
+            
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        # Algorithm initialization
+        if algorithm == 'Linear Regression': model = LinearRegression()
+        elif algorithm == 'Logistic Regression': model = LogisticRegression(max_iter=1000)
+        elif algorithm == 'Decision Tree': 
+            model = DecisionTreeClassifier(random_state=42) if is_classification else DecisionTreeRegressor(random_state=42)
+        elif algorithm == 'Random Forest':
+            model = RandomForestClassifier(n_estimators=100, random_state=42) if is_classification else RandomForestRegressor(n_estimators=100, random_state=42)
+        elif algorithm == 'K-Nearest Neighbors':
+            model = KNeighborsClassifier() if is_classification else KNeighborsRegressor()
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported algorithm")
+            
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        
+        # Metrics
+        metrics = {}
+        if is_classification:
+            metrics['accuracy'] = float(accuracy_score(y_test, y_pred))
+            metrics['precision'] = float(precision_score(y_test, y_pred, average='weighted', zero_division=0))
+            metrics['recall'] = float(recall_score(y_test, y_pred, average='weighted', zero_division=0))
+            metrics['f1'] = float(f1_score(y_test, y_pred, average='weighted', zero_division=0))
+            metrics['confusion_matrix'] = confusion_matrix(y_test, y_pred).tolist()
+        else:
+            metrics['mse'] = float(mean_squared_error(y_test, y_pred))
+            metrics['mae'] = float(mean_absolute_error(y_test, y_pred))
+            metrics['r2'] = float(r2_score(y_test, y_pred))
+            
+        # Feature importance
+        feature_importances = None
+        if hasattr(model, 'feature_importances_'):
+            feature_importances = {f: float(i) for f, i in zip(feature_list, model.feature_importances_)}
+        elif hasattr(model, 'coef_'):
+            coefs = np.abs(model.coef_)
+            if coefs.ndim > 1: coefs = np.mean(coefs, axis=0)
+            feature_importances = {f: float(i) for f, i in zip(feature_list, coefs)}
+
+        # Visualization data (Sample 100)
+        idx = np.random.choice(len(y_test), min(100, len(y_test)), replace=False)
+        actual_vs_predicted = {
+            "actual": np.array(y_test)[idx].tolist(),
+            "predicted": np.array(y_pred)[idx].tolist()
+        }
+        
+        # Save model to binary buffer
+        model_buffer = io.BytesIO()
+        joblib.dump({
+            'model': model,
+            'features': feature_list,
+            'target_column': target_column,
+            'label_encoders': label_encoders,
+            'is_classification': is_classification,
+            'task_type': task_type
+        }, model_buffer)
         
         return {
-            "status": "success",
-            "message": "Dataset cleaned successfully",
-            "cleaned_dataset_path": new_path,
-            "new_row_count": len(df),
-            "new_col_count": len(df.columns)
+            "metrics": metrics,
+            "task_type": task_type,
+            "feature_importances": feature_importances,
+            "actual_vs_predicted": actual_vs_predicted,
+            "class_labels": label_encoders[f'target_{target_column}'].classes_.tolist() if is_classification else [],
+            "model_binary": model_buffer.getvalue().hex() # Send as hex string for simple JSON transport, or could use another stream
         }
-
     except Exception as e:
-        print(f"Cleaning error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/predict")
-async def predict(request: PredictRequest):
+async def predict(
+    model_file: UploadFile = File(...),
+    inputs: str = Form(...) # JSON string
+):
     try:
-        if not os.path.exists(request.model_path):
-            raise HTTPException(status_code=404, detail="Model file not found")
-            
-        saved_data = joblib.load(request.model_path)
+        import json
+        input_data = json.loads(inputs)
+        
+        model_content = await model_file.read()
+        saved_data = joblib.load(io.BytesIO(model_content))
+        
         model = saved_data['model']
         features = saved_data['features']
-        target_column = saved_data['target_column']
         label_encoders = saved_data['label_encoders']
-        is_classification = saved_data['is_classification']
-        feature_types = saved_data.get('feature_types', {})
+        is_classification = saved_data.get('is_classification', False)
         
-        # Prepare input data
-        input_data = {}
-        for f in features:
-            val = request.inputs.get(f)
-            # Try to convert to the original numeric type if applicable
-            if f in feature_types:
-                if np.issubdtype(feature_types[f], np.number):
-                    try:
-                        val = float(val) if val != '' else 0.0
-                    except:
-                        val = 0.0
-            input_data[f] = val
-
+        # Pre-process entry
         input_df = pd.DataFrame([input_data])
-        
-        # Encode inputs
         for col, le in label_encoders.items():
             if col in input_df.columns:
                 try:
-                    # Handle unseen categories by mapping to a default (usually 0 after fit)
-                    # A more robust way would be handling it during fit_transform
                     input_df[col] = input_df[col].astype(str).map(lambda x: le.transform([x])[0] if x in le.classes_ else 0)
-                except Exception as e:
-                    print(f"Encoding error for {col}: {e}")
+                except:
                     input_df[col] = 0
-                    
-        prediction = model.predict(input_df[features])
         
-        # Inverse transform target if encoded
-        res_prediction = prediction[0]
-        target_le_key = f"target_{target_column}"
+        prediction = model.predict(input_df[features])[0]
+        
+        # Decode target
+        target_le_key = f"target_{saved_data['target_column']}"
         if target_le_key in label_encoders:
-            res_prediction = label_encoders[target_le_key].inverse_transform([res_prediction])[0]
-        
-        # Confidence score
+            prediction = label_encoders[target_le_key].inverse_transform([prediction])[0]
+            
         confidence = 1.0
         if is_classification and hasattr(model, "predict_proba"):
             probs = model.predict_proba(input_df[features])
             confidence = float(np.max(probs))
             
-        return {
-            "prediction": str(res_prediction),
-            "confidence": confidence
-        }
+        return {"prediction": str(prediction), "confidence": confidence}
     except Exception as e:
-        print(f"Prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const login = async (email, password) => {
   const response = await axios.post(`${API_URL}/auth/login`, { email, password });
@@ -25,7 +25,15 @@ const logout = () => {
   localStorage.removeItem('token');
 };
 
-const getCurrentUser = () => JSON.parse(localStorage.getItem('user'));
+const getCurrentUser = () => {
+  try {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  } catch (err) {
+    localStorage.removeItem('user');
+    return null;
+  }
+};
 const getToken = () => localStorage.getItem('token');
 
 export default { login, register, logout, getCurrentUser, getToken };

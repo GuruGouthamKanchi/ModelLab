@@ -44,6 +44,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const DatasetExplorer = () => {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -55,7 +57,7 @@ const DatasetExplorer = () => {
     const fetchDataset = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/dataset/${id}`, {
+        const res = await axios.get(`${API_URL}/dataset/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);
@@ -93,11 +95,11 @@ const DatasetExplorer = () => {
         datasets: [{
           label: 'Frequency',
           data: hist.counts,
-          backgroundColor: 'rgba(6, 182, 212, 0.4)',
-          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(57, 255, 20, 0.3)',
+          borderColor: '#39FF14',
           borderWidth: 2,
           borderRadius: 4,
-          hoverBackgroundColor: '#06b6d4',
+          hoverBackgroundColor: '#39FF14',
         }]
       };
     } else if (metadata.categorical_stats && metadata.categorical_stats[colName]) {
@@ -108,11 +110,11 @@ const DatasetExplorer = () => {
         datasets: [{
           label: 'Frequency',
           data: Object.values(catStats),
-          backgroundColor: 'rgba(139, 92, 246, 0.4)', // Violet-500
-          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(168, 85, 247, 0.4)',
+          borderColor: '#FF2E93',
           borderWidth: 2,
           borderRadius: 4,
-          hoverBackgroundColor: '#8b5cf6',
+          hoverBackgroundColor: '#FF2E93',
         }]
       };
     }
@@ -126,11 +128,11 @@ const DatasetExplorer = () => {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        backgroundColor: 'rgba(13, 13, 13, 0.95)',
         titleFont: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', size: 12 },
         bodyFont: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', size: 11 },
         padding: 12,
-        borderColor: 'rgba(6, 182, 212, 0.3)',
+        borderColor: 'rgba(168, 85, 247, 0.3)',
         borderWidth: 1,
         boxPadding: 6,
         usePointStyle: true,
@@ -155,18 +157,18 @@ const DatasetExplorer = () => {
       <div className="max-w-7xl mx-auto pb-16">
         <header className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
           <div className="flex items-start space-x-6">
-            <Link to="/datasets" className="mt-1.5 p-2.5 bg-surface/50 border border-white/5 rounded-xl text-text-muted hover:text-white hover:border-primary/50 transition-all shadow-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+            <Link to="/datasets" className="mt-1.5 p-2.5 bg-surface/50 border border-white/5 rounded-xl text-text-muted hover:text-white hover:border-primary/50 transition-all shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]">
               <ArrowLeft size={20} />
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-4 mb-3">
                  <h1 className="text-4xl font-black text-white tracking-tighter uppercase font-display">{dataset.name}</h1>
                  {dataset.isCleanedVersion && (
-                   <span className="px-2.5 py-1 bg-success/20 text-success border border-success/30 rounded shadow-[0_0_10px_rgba(16,185,129,0.2)] text-[10px] font-mono font-black tracking-widest uppercase flex items-center">
+                   <span className="px-2.5 py-1 bg-success/20 text-success border border-success/30 rounded shadow-[0_0_10px_rgba(57,255,20,0.2)] text-[10px] font-mono font-black tracking-widest uppercase flex items-center">
                       <ShieldCheck size={12} className="mr-1.5" /> CLEANED ARTIFACT
                    </span>
                  )}
-                 <span className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded shadow-[0_0_10px_rgba(59,130,246,0.2)] text-[10px] font-mono font-black tracking-widest uppercase">
+                 <span className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded shadow-[0_0_10px_rgba(168,85,247,0.2)] text-[10px] font-mono font-black tracking-widest uppercase">
                     {(dataset.fileType || '.csv').replace('.', '')}
                  </span>
               </div>
@@ -190,7 +192,7 @@ const DatasetExplorer = () => {
               )}
             </div>
           </div>
-          <Link to={`/models/build?datasetId=${id}`} className="btn-primary flex items-center space-x-3 px-8 py-4 shadow-lg shadow-primary/20 group hover:shadow-[0_0_25px_rgba(59,130,246,0.4)]">
+          <Link to={`/models/build?datasetId=${id}`} className="btn-primary flex items-center space-x-3 px-8 py-4 shadow-lg shadow-primary/20 group hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]">
              <Zap size={18} className="group-hover:scale-110 transition-transform" />
              <span className="font-bold tracking-widest text-xs uppercase">Initialize Training</span>
           </Link>
@@ -217,7 +219,7 @@ const DatasetExplorer = () => {
               {activeTab === tab.id && (
                 <motion.div 
                   layoutId="activeTab_explorer"
-                  className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary via-accent to-primary shadow-[0_-2px_15px_rgba(6,182,212,0.6)]" 
+                  className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary via-accent to-primary shadow-[0_-2px_15px_rgba(57,255,20,0.6)]" 
                 />
               )}
             </button>
@@ -236,7 +238,7 @@ const DatasetExplorer = () => {
             >
               <div className="p-5 bg-surface/50 border-b border-white/5 flex items-center justify-between">
                  <span className="text-[10px] font-mono text-primary font-bold tracking-widest uppercase flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse mr-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse mr-2 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
                     Temporal sampling: First 100 observations
                  </span>
                  <div className="flex space-x-3">
@@ -296,12 +298,12 @@ const DatasetExplorer = () => {
                           onClick={() => setSelectedColumn(col.name)}
                           className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-300 relative overflow-hidden group ${
                             selectedColumn === col.name 
-                              ? 'bg-gradient-to-r from-accent/20 to-primary/10 border-accent/40 shadow-[0_0_20px_rgba(6,182,212,0.15)] text-white' 
+                              ? 'bg-gradient-to-r from-accent/20 to-primary/10 border-accent/40 shadow-[0_0_20px_rgba(57,255,20,0.15)] text-white' 
                               : 'bg-surface/50 border-white/5 text-text-secondary hover:border-white/20 hover:text-white'
                           }`}
                         >
                            {selectedColumn === col.name && (
-                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>
+                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_rgba(57,255,20,0.8)]"></div>
                            )}
                            <div className="font-bold text-sm truncate tracking-wide">{col.name}</div>
                            <div className="flex items-center justify-between mt-2">
@@ -379,9 +381,9 @@ const DatasetExplorer = () => {
                             // Strong positive -> Blue/Cyan, Strong negative -> Red/Orange, near 0 -> dark
                             const gV = Math.abs(val);
                             let bgColor = `rgba(15, 23, 42, 1)`; // default dark
-                            if (val > 0.1) bgColor = `rgba(6, 182, 212, ${gV})`;
-                            if (val < -0.1) bgColor = `rgba(239, 68, 68, ${gV})`;
-                            if (val === 1) bgColor = `rgba(59, 130, 246, 0.8)`; // Self
+                            if (val > 0.1) bgColor = `rgba(57, 255, 20, ${gV})`;
+                            if (val < -0.1) bgColor = `rgba(255, 46, 147, ${gV})`;
+                            if (val === 1) bgColor = `rgba(168, 85, 247, 0.8)`; // Self
 
                             return (
                               <td key={col} className="w-12 h-12 border border-white/5 p-0 group/cell relative">
@@ -420,7 +422,7 @@ const DatasetExplorer = () => {
                 </div>
                 <div className="flex flex-col items-center justify-center h-[300px]">
                    <ShieldCheck size={48} className="text-primary mb-6 opacity-50" />
-                   <Link to={`/datasets/${id}/clean`} className="btn-primary flex items-center space-x-3 px-8 py-4 shadow-lg shadow-primary/20 hover:shadow-[0_0_25px_rgba(59,130,246,0.3)]">
+                   <Link to={`/datasets/${id}/clean`} className="btn-primary flex items-center space-x-3 px-8 py-4 shadow-lg shadow-primary/20 hover:shadow-[0_0_25px_rgba(168,85,247,0.3)]">
                       <span className="font-bold tracking-widest uppercase text-sm">Launch Cleaning Interface</span>
                    </Link>
                 </div>
@@ -485,7 +487,7 @@ const DatasetExplorer = () => {
                                   initial={{ width: 0 }}
                                   animate={{ width: `${100 - nullPercentage}%` }}
                                   transition={{ duration: 1, ease: "easeOut" }}
-                                  className={`h-full ${isHighRisk ? 'bg-gradient-to-r from-error/50 to-error shadow-[0_0_15px_rgba(239,68,68,0.5)]' : (parseFloat(nullPercentage) > 0 ? 'bg-gradient-to-r from-warning/50 to-warning shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-gradient-to-r from-success/50 to-success shadow-[0_0_15px_rgba(16,185,129,0.5)]')}`}
+                                  className={`h-full ${isHighRisk ? 'bg-gradient-to-r from-error/50 to-error shadow-[0_0_15px_rgba(239,68,68,0.5)]' : (parseFloat(nullPercentage) > 0 ? 'bg-gradient-to-r from-warning/50 to-warning shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-gradient-to-r from-success/50 to-success shadow-[0_0_15px_rgba(57,255,20,0.5)]')}`}
                                 />
                              </div>
                           </div>

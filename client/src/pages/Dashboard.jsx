@@ -14,11 +14,14 @@ import {
   Search,
   BookOpen,
   MousePointer2,
-  Settings
+  Settings,
+  MoreVertical
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({ datasets: 0, models: 0, experiments: 0 });
@@ -32,9 +35,9 @@ const Dashboard = () => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
         
         const [dsRes, modRes, expRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/dataset/list', config),
-          axios.get('http://localhost:5000/api/model/list', config),
-          axios.get('http://localhost:5000/api/experiment/history', config)
+          axios.get(`${API_URL}/dataset/list`, config),
+          axios.get(`${API_URL}/model/list`, config),
+          axios.get(`${API_URL}/experiment/history`, config)
         ]);
 
         setStats({
@@ -54,10 +57,10 @@ const Dashboard = () => {
   }, []);
 
   const statCards = [
-    { name: 'Neural Artifacts', value: stats.datasets, icon: Database, color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', glow: 'group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]' },
-    { name: 'Deployed Models', value: stats.models, icon: Cpu, color: 'text-secondary', bg: 'bg-secondary/10', border: 'border-secondary/20', glow: 'group-hover:shadow-[0_0_20px_rgba(139,92,246,0.3)]' },
-    { name: 'Active Experiments', value: stats.experiments, icon: Activity, color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20', glow: 'group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]' },
-    { name: 'System Accuracy', value: '89.4%', icon: TrendingUp, color: 'text-success', bg: 'bg-success/10', border: 'border-success/20', glow: 'group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]' },
+    { name: 'Neural Artifacts', value: stats.datasets, icon: Database, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary/10', glow: 'hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]' },
+    { name: 'Deployed Models', value: stats.models, icon: Cpu, color: 'text-secondary', bg: 'bg-secondary/5', border: 'border-secondary/10', glow: 'hover:shadow-[0_0_20px_rgba(255,46,147,0.15)]' },
+    { name: 'Active Experiments', value: stats.experiments, icon: Activity, color: 'text-accent', bg: 'bg-accent/5', border: 'border-accent/10', glow: 'hover:shadow-[0_0_20px_rgba(57,255,20,0.15)]' },
+    { name: 'System Accuracy', value: '89.4%', icon: TrendingUp, color: 'text-accent', bg: 'bg-accent/5', border: 'border-accent/10', glow: 'hover:shadow-[0_0_20px_rgba(57,255,20,0.15)]' },
   ];
 
   return (
@@ -65,7 +68,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto pb-12">
         <header className="mb-10 flex flex-col md:flex-row justify-between md:items-end gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center space-x-2 text-primary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-3 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+            <div className="inline-flex items-center space-x-2 text-primary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-3 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
               <span>Command Center Online</span>
             </div>
@@ -106,12 +109,12 @@ const Dashboard = () => {
                     <Link 
                       key={op.name} 
                       to={op.path}
-                      className="glass-card p-4 flex flex-col items-center justify-center text-center space-y-3 hover:border-white/20 transition-all group"
+                      className="glass-card p-4 flex flex-col items-center justify-center text-center space-y-3 border-white/5 hover:border-primary/30 transition-all group"
                     >
-                        <div className={`p-3 rounded-lg bg-white/5 ${op.color} group-hover:scale-110 transition-transform`}>
+                        <div className={`p-3 rounded-lg bg-surface-light/50 ${op.color} group-hover:bg-primary/10 transition-all duration-300`}>
                             <op.icon size={20} />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary group-hover:text-white">{op.name}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-secondary group-hover:text-white transition-colors">{op.name}</span>
                     </Link>
                 ))}
             </div>
@@ -127,19 +130,18 @@ const Dashboard = () => {
               transition={{ delay: i * 0.1, ease: "easeOut" }}
               className={`glass-card p-6 relative overflow-hidden group border ${stat.border} ${stat.glow} transition-all duration-500`}
             >
-              {/* Subtle background glow effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className={`p-4 rounded-xl ${stat.bg} shadow-inner`}>
+                <div className={`w-14 h-14 rounded-xl ${stat.bg} border ${stat.border} flex items-center justify-center shadow-inner`}>
                   <stat.icon className={`${stat.color} w-7 h-7`} />
                 </div>
-                <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer">
+                <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center bg-surface-light group-hover:bg-surface transition-colors cursor-pointer shadow-lg">
                    <ArrowUpRight className="text-text-muted group-hover:text-white transition-colors" size={16} />
                 </div>
               </div>
               <div className="relative z-10">
-                 <h3 className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-1">{stat.name}</h3>
+                 <h3 className="text-text-secondary text-[10px] font-black uppercase tracking-[0.2em] mb-1">{stat.name}</h3>
                  <div className="flex items-baseline space-x-2">
                     <p className="text-4xl font-black text-white font-mono tracking-tighter">{stat.value}</p>
                  </div>
@@ -203,7 +205,7 @@ const Dashboard = () => {
                           <td className="px-6 py-5">
                             <div className="flex items-center space-x-2">
                                <div className={`w-1.5 h-1.5 rounded-full ${
-                                 model.status === 'completed' ? 'bg-success shadow-[0_0_8px_rgba(16,185,129,0.8)]' :
+                                 model.status === 'completed' ? 'bg-success shadow-[0_0_8px_rgba(57,255,20,0.8)]' :
                                  model.status === 'failed' ? 'bg-error shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-warning shadow-[0_0_8px_rgba(245,158,11,0.8)]'
                                }`}></div>
                                <span className={`text-[10px] font-bold uppercase tracking-wider ${

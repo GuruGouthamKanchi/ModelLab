@@ -1,8 +1,13 @@
 const Model = require('../models/Model');
 const Dataset = require('../models/Dataset');
 const Experiment = require('../models/Experiment');
+const { getGFS } = require('../config/gridfs');
+const { Readable } = require('stream');
 const axios = require('axios');
-const path = require('path');
+const FormData = require('form-data');
+const mongoose = require('mongoose');
+
+const ML_ENGINE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 
 const trainModel = async (req, res) => {
   try {
@@ -11,7 +16,7 @@ const trainModel = async (req, res) => {
     const dataset = await Dataset.findById(datasetId);
     if (!dataset) return res.status(404).json({ message: 'Dataset not found' });
 
-    const model = new Model({
+    const modelRecord = new Model({
       userId: req.user,
       datasetId,
       name,
@@ -22,48 +27,76 @@ const trainModel = async (req, res) => {
       status: 'training'
     });
 
-    await model.save();
+    await modelRecord.save();
+    res.status(202).json(modelRecord);
 
-    // Trigger Python ML Engine in the background
-    // Respond to client immediately with 202 Accepted
-    res.status(202).json(model);
-
-    // Background process
+    // Background Training
+    const startTime = Date.now();
     (async () => {
       try {
-        const mlResponse = await axios.post(`${process.env.ML_SERVICE_URL}/train`, {
-          dataset_path: path.resolve(dataset.filePath),
-          algorithm,
-          target_column: targetColumn,
-          features,
-          parameters
-        }, { timeout: 300000 }); // 5 minute timeout for background process
-
-        const { metrics, model_path } = mlResponse.data;
+        const gfs = getGFS();
+        const downloadStream = gfs.openDownloadStream(dataset.fileId);
         
-        model.status = 'completed';
-        model.metrics = metrics;
-        model.modelPath = model_path;
-        await model.save();
+        const chunks = [];
+        await new Promise((resolve) => {
+          downloadStream.on('data', c => chunks.push(c));
+          downloadStream.on('end', resolve);
+        });
+        const datasetBuffer = Buffer.concat(chunks);
 
-        // Create experiment entry
+        const formData = new FormData();
+        formData.append('file', datasetBuffer, dataset.originalName);
+        formData.append('algorithm', algorithm);
+        formData.append('target_column', targetColumn);
+        formData.append('features', Array.isArray(features) ? features.join(',') : features);
+        formData.append('parameters', JSON.stringify(parameters || {}));
+
+        const mlResponse = await axios.post(`${ML_ENGINE_URL}/train`, formData, {
+          headers: formData.getHeaders(),
+          timeout: 600000 // 10 minutes
+        });
+
+        const { metrics, task_type, feature_importances, actual_vs_predicted, class_labels, model_binary } = mlResponse.data;
+        const trainingDuration = (Date.now() - startTime) / 1000;
+
+        // Save model to GridFS
+        const modelBuffer = Buffer.from(model_binary, 'hex');
+        const uploadStream = gfs.openUploadStream(`${modelRecord._id}.joblib`);
+        const fileId = uploadStream.id;
+        
+        const s = new Readable();
+        s.push(modelBuffer);
+        s.push(null);
+        await new Promise((r) => s.pipe(uploadStream).on('finish', r));
+
+        modelRecord.status = 'completed';
+        modelRecord.metrics = metrics;
+        modelRecord.fileId = fileId;
+        modelRecord.taskType = task_type;
+        modelRecord.featureImportances = feature_importances;
+        modelRecord.actualVsPredicted = actual_vs_predicted;
+        modelRecord.classLabels = class_labels;
+        modelRecord.trainingDuration = trainingDuration;
+        await modelRecord.save();
+
         const experiment = new Experiment({
           userId: req.user,
           datasetId,
-          modelId: model._id,
+          modelId: modelRecord._id,
           algorithm,
           metrics,
           parameters
         });
         await experiment.save();
-        console.log(`Model ${model._id} training completed`);
-      } catch (mlError) {
-        console.error('ML Service Error:', mlError.response?.data || mlError.message);
-        model.status = 'failed';
-        model.error = mlError.response?.data?.detail || mlError.message;
-        await model.save();
+
+      } catch (err) {
+        console.error("Training background error:", err.message);
+        modelRecord.status = 'failed';
+        modelRecord.error = err.message;
+        await modelRecord.save();
       }
     })();
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -71,7 +104,9 @@ const trainModel = async (req, res) => {
 
 const getModels = async (req, res) => {
   try {
-    const models = await Model.find({ userId: req.user }).sort({ createdAt: -1 });
+    const models = await Model.find({ userId: req.user })
+      .populate('datasetId', 'name rowCount columnCount')
+      .sort({ createdAt: -1 });
     res.json(models);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -80,9 +115,29 @@ const getModels = async (req, res) => {
 
 const getModelById = async (req, res) => {
   try {
-    const model = await Model.findOne({ _id: req.params.id, userId: req.user });
+    const model = await Model.findOne({ _id: req.params.id, userId: req.user })
+      .populate('datasetId', 'name rowCount columnCount');
     if (!model) return res.status(404).json({ message: 'Model not found' });
     res.json(model);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteModel = async (req, res) => {
+  try {
+    const model = await Model.findOne({ _id: req.params.id, userId: req.user });
+    if (!model) return res.status(404).json({ message: 'Model not found' });
+
+    const gfs = getGFS();
+    if (model.fileId) {
+      await gfs.delete(model.fileId);
+    }
+
+    await Experiment.deleteMany({ modelId: model._id });
+    await Model.findByIdAndDelete(model._id);
+
+    res.json({ message: 'Model deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -91,12 +146,25 @@ const getModelById = async (req, res) => {
 const predict = async (req, res) => {
   try {
     const { modelId, inputs } = req.body;
-    const model = await Model.findById(modelId);
+    const model = await Model.findOne({ _id: modelId, userId: req.user });
     if (!model) return res.status(404).json({ message: 'Model not found' });
 
-    const mlResponse = await axios.post(`${process.env.ML_SERVICE_URL}/predict`, {
-      model_path: model.modelPath,
-      inputs
+    const gfs = getGFS();
+    const downloadStream = gfs.openDownloadStream(model.fileId);
+    
+    const chunks = [];
+    await new Promise((resolve) => {
+      downloadStream.on('data', c => chunks.push(c));
+      downloadStream.on('end', resolve);
+    });
+    const modelBuffer = Buffer.concat(chunks);
+
+    const formData = new FormData();
+    formData.append('model_file', modelBuffer, `${modelId}.joblib`);
+    formData.append('inputs', JSON.stringify(inputs));
+
+    const mlResponse = await axios.post(`${ML_ENGINE_URL}/predict`, formData, {
+      headers: formData.getHeaders()
     });
 
     res.json(mlResponse.data);
@@ -105,4 +173,4 @@ const predict = async (req, res) => {
   }
 };
 
-module.exports = { trainModel, getModels, getModelById, predict };
+module.exports = { trainModel, getModels, getModelById, deleteModel, predict };

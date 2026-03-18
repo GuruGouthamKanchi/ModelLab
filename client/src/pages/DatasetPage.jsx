@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
-import { 
-  Upload, 
-  FileText, 
-  Trash2, 
-  ExternalLink, 
-  CheckCircle2, 
+import {
+  Upload,
+  FileText,
+  Trash2,
+  ExternalLink,
+  CheckCircle2,
   AlertCircle,
   Database,
   X,
@@ -23,13 +23,15 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const DatasetPage = () => {
   const [datasets, setDatasets] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Enhancement states
   const [pendingFile, setPendingFile] = useState(null);
   const [customName, setCustomName] = useState('');
@@ -40,7 +42,7 @@ const DatasetPage = () => {
   const fetchDatasets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/dataset/list', {
+      const res = await axios.get(`${API_URL}/dataset/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDatasets(res.data);
@@ -55,7 +57,7 @@ const DatasetPage = () => {
 
   const generatePreview = (file) => {
     const fileType = file.name.split('.').pop().toLowerCase();
-    
+
     if (fileType !== 'csv' && fileType !== 'json') {
       setFilePreview({ type: 'Excel/Binary', status: 'Format supported but preview disabled for local speed.' });
       return;
@@ -115,10 +117,10 @@ const DatasetPage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/dataset/upload', formData, {
-        headers: { 
+      await axios.post(`${API_URL}/dataset/upload`, formData, {
+        headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -150,10 +152,10 @@ const DatasetPage = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to remove this dataset? This will affect any models trained with it.')) return;
-    
+
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/dataset/${id}`, {
+      await axios.delete(`${API_URL}/dataset/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchDatasets();
@@ -162,12 +164,12 @@ const DatasetPage = () => {
     }
   };
 
-  const filteredDatasets = datasets.filter(ds => 
-    ds.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredDatasets = datasets.filter(ds =>
+    ds.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ds.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'text/csv': ['.csv'],
@@ -187,10 +189,10 @@ const DatasetPage = () => {
             <p className="text-text-secondary text-lg">Orchestrate and manage neural telemetry datasets for laboratory analysis.</p>
           </div>
           <div className="flex bg-gray-900 p-1.5 rounded-xl border border-gray-800">
-             <div className="px-4 py-2 bg-gray-800 rounded-lg text-xs font-bold text-white shadow-xl flex items-center space-x-2 border border-gray-700">
-                <ShieldCheck size={14} className="text-success" />
-                <span>Encrypted Connection Active</span>
-             </div>
+            <div className="px-4 py-2 bg-gray-800 rounded-lg text-xs font-bold text-white shadow-xl flex items-center space-x-2 border border-gray-700">
+              <ShieldCheck size={14} className="text-success" />
+              <span>Encrypted Connection Active</span>
+            </div>
           </div>
         </header>
 
@@ -199,12 +201,12 @@ const DatasetPage = () => {
           <div className="lg:col-span-12 xl:col-span-4 space-y-6">
             <AnimatePresence mode="wait">
               {uploadStep === 'idle' && (
-                <motion.div 
+                <motion.div
                   key="idle"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  {...getRootProps()} 
+                  {...getRootProps()}
                   className={`
                     glass-card p-12 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all min-h-[440px] relative overflow-hidden group
                     ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-800 hover:border-primary/40'}
@@ -212,34 +214,34 @@ const DatasetPage = () => {
                 >
                   <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <input {...getInputProps()} />
-                  
-                  <motion.div 
+
+                  <motion.div
                     animate={isDragActive ? { y: [0, -10, 0], scale: 1.1 } : {}}
                     transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 border border-primary/20 shadow-[0_0_30px_rgba(79,124,255,0.1)] relative z-10"
+                    className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 border border-primary/20 shadow-[0_0_30px_rgba(168,85,247,0.1)] relative z-10"
                   >
                     <Upload className="text-primary w-10 h-10" />
                   </motion.div>
-                  
+
                   <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-3 text-white">Import Neural Specimen</h2>
                     <p className="text-text-secondary mb-10 text-sm leading-relaxed max-w-xs mx-auto">
                       Drag and drop structured data files. Supports heavy CSV and complex Excel workbooks.
                     </p>
-                    
+
                     <div className="flex justify-center space-x-3 mb-2">
-                       <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
-                          <FileText size={12} />
-                          <span>CSV</span>
-                       </span>
-                       <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
-                          <FileSpreadsheet size={12} />
-                          <span>XLSX</span>
-                       </span>
-                       <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
-                          <Binary size={12} />
-                          <span>JSON</span>
-                       </span>
+                      <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
+                        <FileText size={12} />
+                        <span>CSV</span>
+                      </span>
+                      <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
+                        <FileSpreadsheet size={12} />
+                        <span>XLSX</span>
+                      </span>
+                      <span className="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-[11px] font-bold text-text-muted">
+                        <Binary size={12} />
+                        <span>JSON</span>
+                      </span>
                     </div>
                     <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] font-bold">Limit: 50MB per session</p>
                   </div>
@@ -247,7 +249,7 @@ const DatasetPage = () => {
               )}
 
               {uploadStep === 'config' && (
-                <motion.div 
+                <motion.div
                   key="config"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -278,8 +280,8 @@ const DatasetPage = () => {
                     <div className="space-y-5">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] ml-1">Laboratory Label</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={customName}
                           onChange={(e) => setCustomName(e.target.value)}
                           className="input-field w-full h-12 !pl-4 bg-gray-950/50 border-gray-800 focus:border-primary transition-all text-white font-medium"
@@ -287,38 +289,38 @@ const DatasetPage = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] ml-1">Neural Narrative (Optional)</label>
-                         <textarea 
-                           value={description}
-                           onChange={(e) => setDescription(e.target.value)}
-                           className="input-field w-full min-h-[80px] !pl-4 py-3 resize-none bg-gray-950/50 border-gray-800 focus:border-primary transition-all text-white text-sm"
-                           placeholder="Describe the anomalies and scope..."
-                         />
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] ml-1">Neural Narrative (Optional)</label>
+                        <textarea
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          className="input-field w-full min-h-[80px] !pl-4 py-3 resize-none bg-gray-950/50 border-gray-800 focus:border-primary transition-all text-white text-sm"
+                          placeholder="Describe the anomalies and scope..."
+                        />
                       </div>
                     </div>
-                    
+
                     {filePreview && (
                       <div className="pt-4 border-t border-gray-800/50">
                         <div className="flex items-center justify-between mb-3">
-                           <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Metadata Snapshot</span>
-                           <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{filePreview.totalCols || 'N/A'} COLS</span>
+                          <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Metadata Snapshot</span>
+                          <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded font-mono">{filePreview.totalCols || 'N/A'} COLS</span>
                         </div>
                         <div className="p-3 bg-gray-950/80 rounded-lg border border-gray-800/50">
-                           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                              {filePreview.headers?.map((h, i) => (
-                                <span key={i} className="text-[9px] font-mono text-primary bg-primary/5 px-2 py-0.5 rounded whitespace-nowrap">{h}</span>
-                              ))}
-                           </div>
-                           <div className="text-[9px] font-mono text-text-muted mt-2 italic leading-relaxed">
-                              {filePreview.status || 'First 3 samples parsed successfully. Schema looks valid for neural training.'}
-                           </div>
+                          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {filePreview.headers?.map((h, i) => (
+                              <span key={i} className="text-[9px] font-mono text-primary bg-primary/5 px-2 py-0.5 rounded whitespace-nowrap">{h}</span>
+                            ))}
+                          </div>
+                          <div className="text-[9px] font-mono text-text-muted mt-2 italic leading-relaxed">
+                            {filePreview.status || 'First 3 samples parsed successfully. Schema looks valid for neural training.'}
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
 
                   <div className="pt-8">
-                    <button 
+                    <button
                       onClick={handleUpload}
                       className="btn-primary w-full py-4 flex items-center justify-center space-x-3 shadow-2xl shadow-primary/30 group relative overflow-hidden"
                     >
@@ -331,7 +333,7 @@ const DatasetPage = () => {
               )}
 
               {uploadStep === 'uploading' && (
-                <motion.div 
+                <motion.div
                   key="uploading"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -354,7 +356,7 @@ const DatasetPage = () => {
               )}
 
               {uploadStep === 'success' && (
-                <motion.div 
+                <motion.div
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -370,17 +372,17 @@ const DatasetPage = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-            
+
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="p-5 bg-error/10 border border-error/20 text-error rounded-2xl flex items-start space-x-4 shadow-xl shadow-error/10"
               >
                 <AlertCircle className="w-6 h-6 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                   <p className="font-bold text-sm">System Conflict</p>
-                   <p className="text-xs opacity-80 leading-relaxed font-medium">{error}</p>
+                  <p className="font-bold text-sm">System Conflict</p>
+                  <p className="text-xs opacity-80 leading-relaxed font-medium">{error}</p>
                 </div>
               </motion.div>
             )}
@@ -395,15 +397,15 @@ const DatasetPage = () => {
               </h3>
               <ul className="text-xs text-text-secondary space-y-5 relative z-10">
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 animate-pulse shadow-[0_0_8px_rgba(79,124,255,1)]"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 animate-pulse shadow-[0_0_8px_rgba(168,85,247,1)]"></div>
                   <span className="font-medium">Minimum of 10 observations required for neural trajectory mapping.</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 shadow-[0_0_8px_rgba(79,124,255,0.4)]"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.4)]"></div>
                   <span className="font-medium font-mono text-[10px] text-text-muted opacity-80 uppercase tracking-tight">UTF-8 / ISO-8859-1 connectivity protocols only.</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 shadow-[0_0_8px_rgba(79,124,255,0.4)]"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-4 flex-shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.4)]"></div>
                   <span className="font-semibold text-primary/80">Addressing null entropy pre-import increases accuracy coefficients by up to 14%.</span>
                 </li>
               </ul>
@@ -421,13 +423,13 @@ const DatasetPage = () => {
                     {datasets.length} REGISTERED
                   </span>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted w-4 h-4" />
-                    <input 
-                      type="text" 
-                      placeholder="Locate neural artifact..." 
+                    <input
+                      type="text"
+                      placeholder="Locate neural artifact..."
                       className="bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary w-full md:w-64 transition-all"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -449,18 +451,18 @@ const DatasetPage = () => {
                   </div>
                 ) : (
                   filteredDatasets.map((dataset, i) => (
-                    <motion.div 
-                      key={dataset._id} 
+                    <motion.div
+                      key={dataset._id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                       className="p-8 flex flex-col md:flex-row md:items-center justify-between hover:bg-primary/5 transition-all gap-8 group"
                     >
                       <div className="flex items-start space-x-6">
-                        <div className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-2xl flex items-center justify-center text-primary group-hover:border-primary shadow-[0_0_0_0_rgba(79,124,255,0)] group-hover:shadow-[0_0_20px_rgba(79,124,255,0.1)] group-hover:scale-105 transition-all duration-500 relative">
+                        <div className="w-16 h-16 bg-gray-900 border border-gray-800 rounded-2xl flex items-center justify-center text-primary group-hover:border-primary shadow-[0_0_0_0_rgba(168,85,247,0)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] group-hover:scale-105 transition-all duration-500 relative">
                           {dataset.fileType === '.csv' ? <FileText size={28} /> : <FileSpreadsheet size={28} />}
                           <div className="absolute -top-2 -right-2 px-1.5 py-0.5 bg-gray-900 border border-gray-800 rounded-md text-[8px] font-black text-text-muted uppercase tracking-tighter z-10">
-                             {dataset.fileType.replace('.', '')}
+                            {dataset.fileType.replace('.', '')}
                           </div>
                         </div>
                         <div className="space-y-1.5">
@@ -483,16 +485,16 @@ const DatasetPage = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 md:opacity-0 group-hover:opacity-100 transition-all md:translate-x-6 group-hover:translate-x-0">
-                        <Link 
+                        <Link
                           to={`/datasets/${dataset._id}`}
                           className="flex items-center space-x-3 px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl transition-all text-xs font-black tracking-widest uppercase border border-primary/20 hover:shadow-xl hover:shadow-primary/20"
                         >
                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                           <span>SPECTRUM</span>
                         </Link>
-                        <button 
+                        <button
                           onClick={() => handleDelete(dataset._id)}
                           className="p-3 text-text-muted hover:text-error transition-all hover:bg-error/10 rounded-xl hover:border hover:border-error/20"
                           title="Purge Artifact"
@@ -505,10 +507,10 @@ const DatasetPage = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center justify-center space-x-3 text-text-muted opacity-30 select-none">
-                <ShieldCheck size={16} />
-                <span className="text-[10px] font-black tracking-[0.3em] uppercase">Laboratory End-to-End Encryption Enabled</span>
+              <ShieldCheck size={16} />
+              <span className="text-[10px] font-black tracking-[0.3em] uppercase">Laboratory End-to-End Encryption Enabled</span>
             </div>
           </div>
         </div>

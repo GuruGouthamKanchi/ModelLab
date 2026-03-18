@@ -14,10 +14,13 @@ import {
   AlertCircle,
   Activity,
   Zap,
-  Network
+  Network,
+  ShieldCheck
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ModelBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -48,7 +51,7 @@ const ModelBuilder = () => {
     const fetchDatasets = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/dataset/list', {
+        const res = await axios.get(`${API_URL}/dataset/list`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setDatasets(res.data);
@@ -98,7 +101,7 @@ const ModelBuilder = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/model/train', {
+      const res = await axios.post(`${API_URL}/model/train`, {
         datasetId: selectedDataset._id,
         name: modelName,
         algorithm,
@@ -128,8 +131,8 @@ const ModelBuilder = () => {
         <div className="absolute bottom-40 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <header className="mb-12 relative z-10">
-          <div className="inline-flex items-center space-x-2 text-primary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-4 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+          <div className="inline-flex items-center space-x-2 text-primary font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-4 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
             <span>Module Configurator</span>
           </div>
           <h1 className="text-4xl font-black text-white mb-3 tracking-tighter uppercase font-display">Neural Architect</h1>
@@ -149,7 +152,7 @@ const ModelBuilder = () => {
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
               <div className="p-8 border-b border-white/5 bg-surface/50 flex items-center justify-between">
                 <h2 className="text-xl font-black flex items-center tracking-tight uppercase font-display text-white">
-                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(59,130,246,0.15)]">1</div>
+                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">1</div>
                    Baseline Ingestion
                 </h2>
               </div>
@@ -212,7 +215,7 @@ const ModelBuilder = () => {
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
                 <div className="p-8 border-b border-white/5 bg-surface/50">
                   <h2 className="text-xl font-black flex items-center tracking-tight uppercase font-display text-white">
-                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 text-accent flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(6,182,212,0.15)]">2</div>
+                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 text-accent flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(57,255,20,0.15)]">2</div>
                      Dimensional Matrix
                   </h2>
                 </div>
@@ -234,7 +237,7 @@ const ModelBuilder = () => {
                             group relative flex items-center px-4 py-2.5 rounded-lg border transition-all text-xs font-bold tracking-wide overflow-hidden
                             ${isTarget ? 'opacity-30 cursor-not-allowed bg-gray-900 border-gray-800' : ''}
                             ${!isTarget && isSelected 
-                              ? 'bg-accent/10 border-accent/40 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)]' 
+                              ? 'bg-accent/10 border-accent/40 text-white shadow-[0_0_20px_rgba(57,255,20,0.15)]' 
                               : ''}
                             ${!isTarget && !isSelected ? 'bg-surface/50 border-white/5 text-text-secondary hover:border-white/20 hover:text-white' : ''}
                           `}
@@ -271,7 +274,7 @@ const ModelBuilder = () => {
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-secondary to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
               <div className="p-8 border-b border-white/5 bg-surface/50">
                 <h2 className="text-xl font-black flex items-center tracking-tight uppercase font-display text-white">
-                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/20 text-secondary flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(139,92,246,0.15)]">3</div>
+                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/20 text-secondary flex items-center justify-center text-sm mr-4 shadow-[0_0_15px_rgba(255,46,147,0.15)]">3</div>
                    Architecture Topology
                 </h2>
               </div>
@@ -283,7 +286,7 @@ const ModelBuilder = () => {
                     className={`
                       p-5 rounded-xl border flex flex-col text-left transition-all relative overflow-hidden group
                       ${algorithm === algo.name 
-                        ? 'border-secondary/50 bg-secondary/10 shadow-[0_0_30px_rgba(139,92,246,0.15)]' 
+                        ? 'border-secondary/50 bg-secondary/10 shadow-[0_0_30px_rgba(255,46,147,0.15)]' 
                         : 'border-white/5 bg-surface/50 hover:border-white/20 hover:bg-white/[0.02]'}
                     `}
                   >
@@ -295,13 +298,13 @@ const ModelBuilder = () => {
                     <div className="flex items-start justify-between mb-4 relative z-10">
                        <div className={`
                          w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-inner
-                         ${algorithm === algo.name ? 'bg-secondary text-white shadow-[0_0_15px_rgba(139,92,246,0.5)]' : 'bg-gray-900/80 border border-white/5 text-text-muted group-hover:text-text-primary'}
+                         ${algorithm === algo.name ? 'bg-secondary text-white shadow-[0_0_15px_rgba(255,46,147,0.5)]' : 'bg-gray-900/80 border border-white/5 text-text-muted group-hover:text-text-primary'}
                        `}>
                          <algo.icon size={22} className={algorithm !== algo.name ? algo.color : ''} />
                        </div>
                        
                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${algorithm === algo.name ? 'border-secondary' : 'border-gray-700'}`}>
-                          {algorithm === algo.name && <div className="w-2.5 h-2.5 bg-secondary rounded-full shadow-[0_0_8px_rgba(139,92,246,0.8)]"></div>}
+                          {algorithm === algo.name && <div className="w-2.5 h-2.5 bg-secondary rounded-full shadow-[0_0_8px_rgba(255,46,147,0.8)]"></div>}
                        </div>
                     </div>
 
@@ -389,10 +392,10 @@ const ModelBuilder = () => {
               <button
                 disabled={training || !selectedDataset}
                 onClick={handleTrain}
-                className="w-full py-5 rounded-xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center space-x-3 group relative overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                className="w-full py-5 rounded-xl font-black text-xs tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center space-x-3 group relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 style={{
-                  background: training ? 'transparent' : 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-                  border: training ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)'
+                  background: training ? 'transparent' : 'linear-gradient(135deg, #A855F7 0%, #FF2E93 100%)',
+                  border: training ? '1px solid rgba(168,85,247,0.3)' : '1px solid rgba(255,255,255,0.1)'
                 }}
               >
                 {!training && <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>}
