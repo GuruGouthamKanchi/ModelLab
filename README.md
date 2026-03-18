@@ -144,7 +144,7 @@ ModelLab is optimized for a **full cloud-native deployment**:
 
 | Laboratory Dashboard | Neural Model Builder |
 | :--- | :--- |
-| ![Dashboard](https://via.placeholder.com/400x250?text=ModelLab+Dashboard) | ![Builder](https://via.placeholder.com/400x250?text=Neural+Model+Builder) |
+| ![Dashboard](https://modellab-frontend.vercel.app/dashboard) | ![Builder](https://modellab-frontend.vercel.app/models) |
 
 ---
 
