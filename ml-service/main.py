@@ -169,7 +169,7 @@ async def train(
             label_encoders[col] = le
             
         # Determine task type
-        is_classification = y.dtype == 'object' or y.dtype.name == 'category' or (request.algorithm in ['Logistic Regression', 'Decision Tree', 'Random Forest', 'K-Nearest Neighbors'] and y.nunique() < 20)
+        is_classification = y.dtype == 'object' or y.dtype.name == 'category' or (algorithm in ['Logistic Regression', 'Decision Tree', 'Random Forest', 'K-Nearest Neighbors'] and y.nunique() < 20)
         
         if is_classification:
             le_y = LabelEncoder()
