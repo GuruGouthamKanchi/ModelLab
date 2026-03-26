@@ -47,26 +47,36 @@ async def analyze(file: UploadFile = File(...)):
         missing_values = {col: int(val) for col, val in df.isnull().sum().to_dict().items()}
         dtypes = {col: str(dtype) for col, dtype in df.dtypes.items()}
         
+        # 🏎️ PERFORMANCE OPTIMIZATION for Render (512MB RAM)
+        # If the dataset is large, sample it for analysis to prevent 502 timeouts/OOM crashes
+        is_large = len(df) > 20000 or len(df.columns) > 50
+        
+        # We perform stats on a sample for speed, but row counts on the full DF
+        analysis_df = df.sample(n=min(10000, len(df))) if is_large else df
+        
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         numeric_stats = {}
         histograms = {}
+        
         for col in numeric_cols:
             numeric_stats[col] = {
                 "mean": float(df[col].mean()) if not pd.isna(df[col].mean()) else 0.0,
                 "min": float(df[col].min()) if not pd.isna(df[col].min()) else 0.0,
                 "max": float(df[col].max()) if not pd.isna(df[col].max()) else 0.0
             }
-            data_clean = df[col].dropna()
-            if not data_clean.empty:
-                counts, bins = np.histogram(data_clean, bins=20)
+            # Histograms are slow, use sample
+            data_sample = analysis_df[col].dropna()
+            if not data_sample.empty:
+                counts, bins = np.histogram(data_sample, bins=20)
                 histograms[col] = {
                     "counts": counts.tolist(),
                     "bins": bins.tolist()
                 }
             
         correlation = {}
-        if len(numeric_cols) > 1:
-            corr_df = df[numeric_cols].corr().fillna(0)
+        # Correlation is O(N^2) - DISABLE if too many columns to prevent 502
+        if 1 < len(numeric_cols) < 40:
+            corr_df = analysis_df[numeric_cols].corr().fillna(0)
             correlation = {k: {ik: float(iv) for ik, iv in v.items()} for k, v in corr_df.to_dict().items()}
             
         cat_cols = df.select_dtypes(include=['object', 'category']).columns
@@ -293,5 +303,6 @@ async def predict(
 
 if __name__ == "__main__":
     import uvicorn
+    # Use the port assigned by Render/Environment
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
