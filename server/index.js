@@ -56,6 +56,25 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/modellab'
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+    // 🚀 24/7 HEARTBEAT: Prevent Render from sleeping
+    const ML_ENGINE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+    const axios = require('axios');
+    
+    const keepAlive = async () => {
+      try {
+        // Self-ping
+        await axios.get(`http://localhost:${PORT}/health`);
+        // Ping ML Engine
+        await axios.get(`${ML_ENGINE_URL}/`);
+        console.log(`[${new Date().toISOString()}] Heartbeat: Both services are awake.`);
+      } catch (err) {
+        console.warn(`[${new Date().toISOString()}] Heartbeat Warning: One or more services are starting up...`);
+      }
+    };
+
+    // Run every 13 minutes (Render sleeps after 15m)
+    setInterval(keepAlive, 13 * 60 * 1000);
+    keepAlive(); // Initial heartbeat
   })
   .catch((err) => {
     console.error('CRITICAL: MongoDB connection error:', err.message);
